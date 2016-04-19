@@ -14,9 +14,6 @@
 
 @SET_MAKE@
 
-mutt_SOURCES += compress.c
-EXTRA_DIST += compress.h
-mutt_OBJECTS += compress.o
 
 VPATH = @srcdir@
 am__is_gnu_make = { \
@@ -119,27 +116,27 @@ am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS) $(noinst_PROGRAMS)
 am_mutt_OBJECTS = addrbook.$(OBJEXT) alias.$(OBJEXT) attach.$(OBJEXT) \
 	base64.$(OBJEXT) browser.$(OBJEXT) buffy.$(OBJEXT) \
-	color.$(OBJEXT) crypt.$(OBJEXT) cryptglue.$(OBJEXT) \
-	commands.$(OBJEXT) complete.$(OBJEXT) compose.$(OBJEXT) \
-	copy.$(OBJEXT) curs_lib.$(OBJEXT) curs_main.$(OBJEXT) \
-	date.$(OBJEXT) edit.$(OBJEXT) enter.$(OBJEXT) flags.$(OBJEXT) \
-	init.$(OBJEXT) filter.$(OBJEXT) from.$(OBJEXT) \
-	getdomain.$(OBJEXT) group.$(OBJEXT) handler.$(OBJEXT) \
-	hash.$(OBJEXT) hdrline.$(OBJEXT) headers.$(OBJEXT) \
-	help.$(OBJEXT) hook.$(OBJEXT) keymap.$(OBJEXT) main.$(OBJEXT) \
-	mbox.$(OBJEXT) menu.$(OBJEXT) mh.$(OBJEXT) mx.$(OBJEXT) \
-	opennfs.$(OBJEXT) pager.$(OBJEXT) parse.$(OBJEXT) pattern.$(OBJEXT) \
+	color.$(OBJEXT) compress.$(OBJEXT) crypt.$(OBJEXT) \
+	cryptglue.$(OBJEXT) commands.$(OBJEXT) complete.$(OBJEXT) \
+	compose.$(OBJEXT) copy.$(OBJEXT) curs_lib.$(OBJEXT) \
+	curs_main.$(OBJEXT) date.$(OBJEXT) edit.$(OBJEXT) \
+	enter.$(OBJEXT) flags.$(OBJEXT) init.$(OBJEXT) \
+	filter.$(OBJEXT) from.$(OBJEXT) getdomain.$(OBJEXT) \
+	group.$(OBJEXT) handler.$(OBJEXT) hash.$(OBJEXT) \
+	hdrline.$(OBJEXT) headers.$(OBJEXT) help.$(OBJEXT) \
+	hook.$(OBJEXT) keymap.$(OBJEXT) main.$(OBJEXT) mbox.$(OBJEXT) \
+	menu.$(OBJEXT) mh.$(OBJEXT) mx.$(OBJEXT) opennfs.$(OBJEXT) \
+	pager.$(OBJEXT) parse.$(OBJEXT) pattern.$(OBJEXT) \
 	postpone.$(OBJEXT) query.$(OBJEXT) recvattach.$(OBJEXT) \
 	recvcmd.$(OBJEXT) rfc822.$(OBJEXT) rfc1524.$(OBJEXT) \
 	rfc2047.$(OBJEXT) rfc2231.$(OBJEXT) rfc3676.$(OBJEXT) \
-	score.$(OBJEXT) send.$(OBJEXT) sendlib.$(OBJEXT) \
-	sidebar.$(OBJECT) \
-	signal.$(OBJEXT) sort.$(OBJEXT) status.$(OBJEXT) \
-	system.$(OBJEXT) thread.$(OBJEXT) charset.$(OBJEXT) \
-	history.$(OBJEXT) lib.$(OBJEXT) muttlib.$(OBJEXT) \
-	editmsg.$(OBJEXT) mbyte.$(OBJEXT) mutt_idna.$(OBJEXT) \
-	url.$(OBJEXT) ascii.$(OBJEXT) crypt-mod.$(OBJEXT) \
-	safe_asprintf.$(OBJEXT)
+	sidebar.$(OBJEXT) score.$(OBJEXT) send.$(OBJEXT) \
+	sendlib.$(OBJEXT) signal.$(OBJEXT) sort.$(OBJEXT) \
+	status.$(OBJEXT) system.$(OBJEXT) thread.$(OBJEXT) \
+	charset.$(OBJEXT) history.$(OBJEXT) lib.$(OBJEXT) \
+	muttlib.$(OBJEXT) editmsg.$(OBJEXT) mbyte.$(OBJEXT) \
+	mutt_idna.$(OBJEXT) url.$(OBJEXT) ascii.$(OBJEXT) \
+	crypt-mod.$(OBJEXT) safe_asprintf.$(OBJEXT)
 am__objects_1 =
 am__objects_2 = patchlist.$(OBJEXT) conststrings.$(OBJEXT) \
 	$(am__objects_1)
@@ -158,8 +155,9 @@ pgpewrap_OBJECTS = pgpewrap.$(OBJEXT)
 pgpewrap_LDADD = $(LDADD)
 pgpewrap_DEPENDENCIES = $(LIBOBJS) $(am__DEPENDENCIES_1)
 am_pgpring_OBJECTS = pgppubring.$(OBJEXT) pgplib.$(OBJEXT) \
-	lib.$(OBJEXT) extlib.$(OBJEXT) sha1.$(OBJEXT) md5.$(OBJEXT) \
-	pgppacket.$(OBJEXT) ascii.$(OBJEXT) opennfs.$(OBJEXT)
+	lib.$(OBJEXT) extlib.$(OBJEXT) sha1.$(OBJEXT) \
+	opennfs.$(OBJEXT) md5.$(OBJEXT) pgppacket.$(OBJEXT) \
+	ascii.$(OBJEXT)
 pgpring_OBJECTS = $(am_pgpring_OBJECTS)
 am_txt2c_OBJECTS = txt2c.$(OBJEXT)
 txt2c_OBJECTS = $(am_txt2c_OBJECTS)
@@ -459,7 +457,6 @@ pdfdir = @pdfdir@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
 psdir = @psdir@
-runstatedir = @runstatedir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
@@ -481,6 +478,7 @@ bin_SCRIPTS = muttbug flea $(SMIMEAUX_TARGET)
 BUILT_SOURCES = keymap_defs.h patchlist.c reldate.h conststrings.c $(HCVERSION)
 mutt_SOURCES = \
 	addrbook.c alias.c attach.c base64.c browser.c buffy.c color.c \
+	compress.c \
 	crypt.c cryptglue.c \
 	commands.c complete.c compose.c copy.c curs_lib.c curs_main.c date.c \
 	edit.c enter.c flags.c init.c filter.c from.c \
@@ -489,8 +487,8 @@ mutt_SOURCES = \
 	main.c mbox.c menu.c mh.c mx.c opennfs.c pager.c parse.c pattern.c \
 	postpone.c query.c recvattach.c recvcmd.c \
 	rfc822.c rfc1524.c rfc2047.c rfc2231.c rfc3676.c \
-	score.c send.c sendlib.c signal.c sort.c \
 	sidebar.c \
+	score.c send.c sendlib.c signal.c sort.c \
 	status.c system.c thread.c charset.c history.c lib.c \
 	muttlib.c editmsg.c mbyte.c mutt_idna.c \
 	url.c ascii.c crypt-mod.c crypt-mod.h safe_asprintf.c
@@ -514,6 +512,7 @@ EXTRA_mutt_SOURCES = account.c bcache.c crypt-gpgme.c crypt-mod-pgp-classic.c \
 
 EXTRA_DIST = COPYRIGHT GPL OPS OPS.PGP OPS.CRYPT OPS.SMIME TODO UPDATING \
 	configure account.h \
+	compress.h \
 	attach.h buffy.h charset.h copy.h crypthash.h dotlock.h functions.h gen_defs \
 	globals.h hash.h history.h init.h keymap.h mutt_crypt.h \
 	mailbox.h mapping.h md5.h mime.h mutt.h mutt_curses.h mutt_menu.h \
@@ -532,7 +531,7 @@ EXTRA_SCRIPTS = smime_keys
 mutt_dotlock_SOURCES = mutt_dotlock.c
 mutt_dotlock_LDADD = $(LIBOBJS)
 mutt_dotlock_DEPENDENCIES = $(LIBOBJS)
-pgpring_SOURCES = pgppubring.c pgplib.c lib.c extlib.c sha1.c md5.c pgppacket.c ascii.c
+pgpring_SOURCES = pgppubring.c pgplib.c lib.c extlib.c sha1.c opennfs.c md5.c pgppacket.c ascii.c
 pgpring_LDADD = $(LIBOBJS) $(INTLLIBS)
 pgpring_DEPENDENCIES = $(LIBOBJS) $(INTLDEPS)
 mutt_md5_SOURCES = md5.c
@@ -739,6 +738,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/commands.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/complete.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/compose.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/compress.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/conststrings.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/copy.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/crypt-gpgme.Po@am__quote@
@@ -790,6 +790,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mutt_tunnel.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/muttlib.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mx.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/opennfs.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pager.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/parse.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/patchlist.Po@am__quote@

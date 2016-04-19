@@ -94,6 +94,9 @@
 /* Define to 1 if you have the `fgets_unlocked' function. */
 #undef HAVE_FGETS_UNLOCKED
 
+/* Define to 1 if you have the `fmemopen' function. */
+#undef HAVE_FMEMOPEN
+
 /* Define to 1 if fseeko (and presumably ftello) exists and is declared. */
 #undef HAVE_FSEEKO
 
@@ -319,6 +322,9 @@
 
 /* Define to 1 if you have the <nl_types.h> header file. */
 #undef HAVE_NL_TYPES_H
+
+/* Define to 1 if you have the `open_memstream' function. */
+#undef HAVE_OPEN_MEMSTREAM
 
 /* Define to 1 if you have the `putenv' function. */
 #undef HAVE_PUTENV
@@ -583,8 +589,8 @@
 
 /* Define to enable Sun mailtool attachments support. */
 #undef SUN_ATTACHMENT
-  
-/* The compressed mailboxes support */
+
+/* Define to enable compressed folders support. */
 #undef USE_COMPRESSED
 
 /* Define to use dotlocking for mailboxes. */
