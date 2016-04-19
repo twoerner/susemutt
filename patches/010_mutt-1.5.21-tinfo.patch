@@ -1,0 +1,19 @@
+--- configure.ac
++++ configure.ac	2011-11-22 12:48:52.319147493 +0000
+@@ -274,9 +274,14 @@ main ()
+ 	do
+ 		AC_CHECK_LIB($lib, waddnwstr, [cf_ncurses="$lib"; break])
+ 	done
++	cf_tinfo=""
++	AC_CHECK_LIB(tinfo, tgetent, [cf_tinfo="tinfo"])
+         AC_CHECK_LIB($cf_ncurses, initscr,
+-                [MUTTLIBS="$MUTTLIBS -l$cf_ncurses"
+-		
++                [if test x$cf_tinfo = x ; then
++			MUTTLIBS="$MUTTLIBS -l$cf_ncurses"
++		else
++			MUTTLIBS="$MUTTLIBS -l$cf_ncurses -l$cf_tinfo"
++		fi
+                 if test "$cf_ncurses" = ncursesw; then
+ 			AC_CHECK_HEADERS(ncursesw/ncurses.h,[cf_cv_ncurses_header="ncursesw/ncurses.h"])
+ 		else

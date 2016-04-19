@@ -1,0 +1,43 @@
+---
+ crypt-gpgme.c |    2 +-
+ mh.c          |    6 +++---
+ mutt.h        |    2 +-
+ 3 files changed, 5 insertions(+), 5 deletions(-)
+
+--- mutt-1.5.23/crypt-gpgme.c
++++ mutt-1.5.23/crypt-gpgme.c	2011-03-02 17:18:01.000000000 +0000
+@@ -450,7 +450,7 @@ static gpgme_data_t body_to_data_object
+ /* Create a GPGME data object from the stream FP but limit the object
+    to LENGTH bytes starting at OFFSET bytes from the beginning of the
+    file. */
+-static gpgme_data_t file_to_data_object (FILE *fp, long offset, long length)
++static gpgme_data_t file_to_data_object (FILE *fp, LOFF_T offset, long length)
+ {
+   int err = 0;
+   gpgme_data_t data;
+--- mutt-1.5.23/mh.c
++++ mutt-1.5.23/mh.c	2011-03-02 17:48:36.000000000 +0000
+@@ -1579,9 +1579,9 @@ static int mh_rewrite_message (CONTEXT *
+   char newpath[_POSIX_PATH_MAX];
+   char partpath[_POSIX_PATH_MAX];
+ 
+-  long old_body_offset = h->content->offset;
+-  long old_body_length = h->content->length;
+-  long old_hdr_lines = h->lines;
++  LOFF_T old_body_offset = h->content->offset;
++  LOFF_T old_body_length = h->content->length;
++  LOFF_T old_hdr_lines = h->lines;
+ 
+   if ((dest = mx_open_new_message (ctx, h, 0)) == NULL)
+     return -1;
+--- mutt-1.5.23/mutt.h
++++ mutt-1.5.23/mutt.h	2011-03-02 16:52:03.000000000 +0000
+@@ -638,7 +638,7 @@ typedef struct body
+   PARAMETER *parameter;         /* parameters of the content-type */
+   char *description;            /* content-description */
+   char *form_name;		/* Content-Disposition form-data name param */
+-  long hdr_offset;              /* offset in stream where the headers begin.
++  LOFF_T hdr_offset;		/* offset in stream where the headers begin.
+ 				 * this info is used when invoking metamail,
+ 				 * where we need to send the headers of the
+ 				 * attachment

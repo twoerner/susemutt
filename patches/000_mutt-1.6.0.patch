@@ -1,0 +1,320 @@
+---
+ configure.ac    |   10 ++++-
+ doc/Makefile.in |    2 -
+ doc/Muttrc      |  102 +++++++++++++++++++++++++++++++++++++++++---------------
+ doc/Muttrc.head |    2 -
+ imap/auth.c     |   20 ++++++++++
+ init.h          |    3 +
+ mx.c            |    3 +
+ 7 files changed, 112 insertions(+), 30 deletions(-)
+
+--- configure.ac
++++ configure.ac	2016-04-11 11:09:41.997377315 +0000
+@@ -240,7 +240,7 @@ main ()
+                         mutt_cv_slang=$withval
+                         if test -d $withval/include/slang; then
+                                 CPPFLAGS="$CPPFLAGS -I${withval}/include/slang"
+-                        elif test -d $withval/include; then
++                        elif test -d $withval/include && test $withval != /usr ; then
+                                 CPPFLAGS="$CPPFLAGS -I${withval}/include"
+                         fi
+                         LDFLAGS="$LDFLAGS -L${withval}/lib"
+@@ -669,8 +669,12 @@ AC_ARG_WITH(ssl, AS_HELP_STRING([--with-
+ 	  else
+             if test "$with_ssl" != "yes"
+             then
++	     case $withval in /usr|/usr/local) ;;
++	     *)
+              LDFLAGS="$LDFLAGS -L$withval/lib"
+              CPPFLAGS="$CPPFLAGS -I$withval/include"
++	     ;;
++	     esac
+             fi
+             saved_LIBS="$LIBS"
+ 
+@@ -749,8 +753,12 @@ AC_ARG_WITH(sasl, AS_HELP_STRING([--with
+ 
+           if test "$with_sasl" != "yes"
+           then
++	    case $with_sasl in /usr|/usr/local) ;;
++	    *)
+             CPPFLAGS="$CPPFLAGS -I$with_sasl/include"
+             LDFLAGS="$LDFLAGS -L$with_sasl/lib"
++	    ;;
++	    esac
+           fi
+ 
+           saved_LIBS="$LIBS"
+--- doc/Makefile.in
++++ doc/Makefile.in	2016-04-11 11:09:41.997377315 +0000
+@@ -697,7 +697,7 @@ uninstall-local:
+ 
+ check:
+ manual.txt: manual.html
+-	-LC_ALL=C lynx -dump -nolist -with_backspaces -display_charset=us-ascii manual.html > $@ || \
++	-LC_ALL=C lynx -dont_wrap_pre -center -dump -nolist -with_backspaces -display_charset=us-ascii manual.html > $@ || \
+ 	LC_ALL=C w3m -dump manual.html > $@ || \
+ 	LC_ALL=C elinks -dump -no-numbering -no-references manual.html | sed -e 's,\\001, ,g' > $@
+ 
+--- doc/Muttrc.head
++++ doc/Muttrc.head	2016-04-11 11:09:41.997377315 +0000
+@@ -23,7 +23,7 @@ macro index,pager,attach,compose \cb "\
+ "call urlview to extract URLs out of a message"
+ 
+ # Show documentation when pressing F1
+-macro generic,pager <F1> "<shell-escape> less @docdir@/manual.txt<Enter>" "show Mutt documentation"
++macro generic,index,pager <F1> "<shell-escape> less -iM @docdir@/manual.txt<Enter>" "show Mutt documentation"
+ 
+ # show the incoming mailboxes list (just like "mutt -y") and back when pressing "y"
+ macro index,pager y "<change-folder>?<toggle-mailboxes>" "show incoming mailboxes list"
+--- doc/Muttrc
++++ doc/Muttrc	2016-04-11 11:07:05.472260646 +0000
+@@ -23,7 +23,7 @@ macro index,pager,attach,compose \cb "\
+ "call urlview to extract URLs out of a message"
+ 
+ # Show documentation when pressing F1
+-macro generic,pager <F1> "<shell-escape> less /usr/local/share/doc/mutt/manual.txt<Enter>" "show Mutt documentation"
++macro generic,index,pager <F1> "<shell-escape> less -iM /usr/share/doc/packages/mutt/manual.txt.gz<Enter>" "show Mutt documentation"
+ 
+ # show the incoming mailboxes list (just like "mutt -y") and back when pressing "y"
+ macro index,pager y "<change-folder>?<toggle-mailboxes>" "show incoming mailboxes list"
+@@ -364,9 +364,9 @@ attachments   -I message/external-body
+ # unset, you must first use the <tag-prefix> function (bound to ``;''
+ # by default) to make the next function apply to all tagged messages.
+ # 
+-# 
+-# set autoedit=no
+-#
++
++set autoedit=yes
++
+ # Name: autoedit
+ # Type: boolean
+ # Default: no
+@@ -482,9 +482,9 @@ attachments   -I message/external-body
+ # Note: It should only be set in case Mutt isn't able to determine the
+ # character set used correctly.
+ # 
+-# 
+-# set check_mbox_size=no
+-#
++
++set check_mbox_size=yes
++
+ # Name: check_mbox_size
+ # Type: boolean
+ # Default: no
+@@ -912,11 +912,11 @@ attachments   -I message/external-body
+ # filtered message is read from the standard output.
+ # 
+ # 
+-# set dotlock_program="/usr/local/bin/mutt_dotlock"
++# set dotlock_program="/usr/bin/mutt_dotlock"
+ #
+ # Name: dotlock_program
+ # Type: path
+-# Default: "/usr/local/bin/mutt_dotlock"
++# Default: "/usr/bin/mutt_dotlock"
+ # 
+ # 
+ # Contains the path of the mutt_dotlock(8) binary to be used by
+@@ -2380,9 +2380,9 @@ attachments   -I message/external-body
+ # directly from the pager, and screen resizes cause lines longer than
+ # the screen width to be badly formatted in the help menu.
+ # 
+-# 
+-# set pager_context=0
+-#
++
++set pager_context=4
++
+ # Name: pager_context
+ # Type: number
+ # Default: 0
+@@ -2410,9 +2410,9 @@ attachments   -I message/external-body
+ # pager.  The valid sequences are listed in the $index_format
+ # section.
+ # 
+-# 
+-# set pager_index_lines=0
+-#
++ 
++set pager_index_lines=10
++
+ # Name: pager_index_lines
+ # Type: number
+ # Default: 0
+@@ -2430,9 +2430,9 @@ attachments   -I message/external-body
+ # is less than $pager_index_lines, then the index will only use as
+ # many lines as it needs.
+ # 
+-# 
+-# set pager_stop=no
+-#
++ 
++set pager_stop=yes
++
+ # Name: pager_stop
+ # Type: boolean
+ # Default: no
+@@ -3538,9 +3538,9 @@ attachments   -I message/external-body
+ # user-defined headers, and other processing effects from being
+ # made multiple times to the draft file.
+ # 
+-# 
+-# set reverse_alias=no
+-#
++
++set reverse_alias=yes
++
+ # Name: reverse_alias
+ # Type: boolean
+ # Default: no
+@@ -3672,6 +3672,18 @@ attachments   -I message/external-body
+ # Also see the $force_name variable.
+ # 
+ # 
++# set send_group_reply_to=no
++#
++# Name: send_group_reply_to
++# Type: boolean
++# Default: no
++# 
++# 
++# This variable controls how group replies are done.
++# When set, all recepients listet in "To:" are set in the
++# "To:" header again, else in the "CC", which is the default.
++# 
++# 
+ # set score=yes
+ #
+ # Name: score
+@@ -4255,9 +4267,9 @@ attachments   -I message/external-body
+ # Setting this variable overrides the value of the $sendmail
+ # variable.
+ # 
+-# 
+-# set sort=date
+-#
++
++set sort=reverse-date-sent
++
+ # Name: sort
+ # Type: sort order
+ # Default: date
+@@ -4741,9 +4753,9 @@ attachments   -I message/external-body
+ # When set, mutt uses the date received rather than the date sent
+ # to thread messages by subject.
+ # 
+-# 
+-# set tilde=no
+-#
++
++set tilde=yes
++
+ # Name: tilde
+ # Type: boolean
+ # Default: no
+@@ -5079,6 +5091,42 @@ attachments   -I message/external-body
+ # in this case.
+ # 
+ # 
++# set xterm_icon="M%?n?AIL&ail?"
++#
++# Name: xterm_icon
++# Type: string
++# Default: "M%?n?AIL&ail?"
++# 
++# 
++# Controls the format of the icon title, as long as xterm_set_titles
++# is enabled. This string is identical in formatting to the one used by
++# ``$status_format''.
++# 
++# 
++# set xterm_set_titles=no
++#
++# Name: xterm_set_titles
++# Type: boolean
++# Default: no
++# 
++# 
++# Controls whether mutt sets the xterm title bar and icon name
++# (as long as you're in an appropriate terminal). The default must
++# be off to force in the validity checking.
++# 
++# 
++# set xterm_title="Mutt with %?m?%m messages&no messages?%?n? [%n NEW]?"
++#
++# Name: xterm_title
++# Type: string
++# Default: "Mutt with %?m?%m messages&no messages?%?n? [%n NEW]?"
++# 
++# 
++# Controls the format of the title bar of the xterm provided that
++# xterm_set_titles has been set. This string is identical in formatting
++# to the one used by ``$status_format''.
++# 
++# 
+ # set write_inc=10
+ #
+ # Name: write_inc
+--- imap/auth.c
++++ imap/auth.c	2016-04-11 11:09:41.997377315 +0000
+@@ -72,6 +72,23 @@ int imap_authenticate (IMAP_DATA* idata)
+       dprint (2, (debugfile, "imap_authenticate: Trying method %s\n", method));
+       authenticator = imap_authenticators;
+ 
++#ifdef USE_SASL
++      /* "login" not supported by SASL */
++      if (!ascii_strcasecmp ("login", method))
++      {
++	while (authenticator->authenticate)
++	{
++	  char* identify = authenticator->method;
++	  if (identify && !ascii_strcasecmp(identify, method))
++	    if ((r = authenticator->authenticate(idata, method)) != IMAP_AUTH_UNAVAIL)
++	    {
++	      FREE(&methods);
++	      return r;
++	    }
++	  authenticator++;
++	}
++      } else {
++#endif
+       while (authenticator->authenticate)
+       {
+ 	if (!authenticator->method ||
+@@ -85,6 +102,9 @@ int imap_authenticate (IMAP_DATA* idata)
+ 	
+ 	authenticator++;
+       }
++#ifdef USE_SASL
++      }
++#endif
+     }
+ 
+     FREE (&methods);
+--- init.h
++++ init.h	2016-04-11 11:09:41.997377315 +0000
+@@ -3122,6 +3122,9 @@ struct option_t MuttVars[] = {
+   ** the default from the GNUTLS library.
+   */
+ # endif /* USE_SSL_GNUTLS */
++#if defined(USE_IMAP) && defined(SUSE_IMAP_FORCE_SSL)
++  { "imap_force_ssl",	DT_SYN,	R_NONE, UL "ssl_force_tls", 0 },
++#endif
+   { "ssl_starttls", DT_QUAD, R_NONE, OPT_SSLSTARTTLS, M_YES },
+   /*
+   ** .pp
+--- mx.c
++++ mx.c	2016-04-11 11:09:42.001377242 +0000
+@@ -1544,6 +1544,9 @@ void mx_update_context (CONTEXT *ctx, in
+   {
+     h = ctx->hdrs[msgno];
+ 
++    if (!h)
++      continue;
++
+     if (WithCrypto)
+     {
+       /* NOTE: this _must_ be done before the check for mailcap! */

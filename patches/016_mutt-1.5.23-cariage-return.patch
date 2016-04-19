@@ -1,0 +1,119 @@
+---
+ lib.c   |   12 ++++++++++++
+ lib.h   |    1 +
+ pager.c |    2 +-
+ pgp.c   |   24 ++++++++++++------------
+ 4 files changed, 26 insertions(+), 13 deletions(-)
+
+--- lib.c
++++ lib.c	2013-05-29 09:31:53.000000000 +0000
+@@ -876,6 +876,18 @@ int mutt_strcmp(const char *a, const cha
+   return strcmp(NONULL(a), NONULL(b));
+ }
+ 
++int mutt_strxcmp(const char *a, const char *b)
++{
++  size_t xa, xb;
++  xa = strcspn(NONULL(a), "\r\n");
++  xb = strcspn(NONULL(b), "\r\n");
++  if (xb != xa)
++    return -1;
++  if (!xa)
++    return 0;
++  return strncmp(NONULL(a), NONULL(b), xa);
++}
++
+ int mutt_strcasecmp(const char *a, const char *b)
+ {
+   return strcasecmp(NONULL(a), NONULL(b));
+--- lib.h
++++ lib.h	2013-05-29 09:25:22.000000000 +0000
+@@ -197,6 +197,7 @@ int mutt_copy_bytes (FILE *, FILE *, siz
+ int mutt_rx_sanitize_string (char *, size_t, const char *);
+ int mutt_strcasecmp (const char *, const char *);
+ int mutt_strcmp (const char *, const char *);
++int mutt_strxcmp (const char *, const char *);
+ int mutt_strncasecmp (const char *, const char *, size_t);
+ int mutt_strncmp (const char *, const char *, size_t);
+ int mutt_strcoll (const char *, const char *);
+--- pager.c
++++ pager.c	2013-05-29 09:31:53.000000000 +0000
+@@ -771,7 +771,7 @@ resolve_types (char *buf, char *raw, str
+   else if (check_attachment_marker ((char *) raw) == 0)
+     lineInfo[n].type = MT_COLOR_ATTACHMENT;
+ #endif
+-  else if (mutt_strcmp ("-- \n", buf) == 0 || mutt_strcmp ("-- \r\n", buf) == 0)
++  else if (mutt_strxcmp ("-- \n", buf) == 0)
+   {
+     i = n + 1;
+ 
+--- pgp.c
++++ pgp.c	2015-01-26 15:48:02.361518080 +0000
+@@ -219,7 +219,7 @@ static void pgp_copy_clearsigned (FILE *
+       continue;
+     }
+ 
+-    if (mutt_strcmp (buf, "-----BEGIN PGP SIGNATURE-----\n") == 0)
++    if (mutt_strxcmp (buf, "-----BEGIN PGP SIGNATURE-----\n") == 0)
+       break;
+     
+     if (armor_header)
+@@ -285,14 +285,14 @@ int pgp_application_pgp_handler (BODY *m
+     {
+       clearsign = 0;
+ 
+-      if (mutt_strcmp ("MESSAGE-----\n", buf + 15) == 0)
++      if (mutt_strxcmp ("MESSAGE-----\n", buf + 15) == 0)
+         needpass = 1;
+-      else if (mutt_strcmp ("SIGNED MESSAGE-----\n", buf + 15) == 0)
++      else if (mutt_strxcmp ("SIGNED MESSAGE-----\n", buf + 15) == 0)
+       {
+ 	clearsign = 1;
+         needpass = 0;
+       }
+-      else if (!mutt_strcmp ("PUBLIC KEY BLOCK-----\n", buf + 15))
++      else if (!mutt_strxcmp ("PUBLIC KEY BLOCK-----\n", buf + 15))
+       {
+         needpass = 0;
+         pgp_keyblock = 1;
+@@ -325,10 +325,10 @@ int pgp_application_pgp_handler (BODY *m
+ 	
+ 	fputs (buf, tmpfp);
+ 
+-	if ((needpass && mutt_strcmp ("-----END PGP MESSAGE-----\n", buf) == 0) ||
++	if ((needpass && mutt_strxcmp ("-----END PGP MESSAGE-----\n", buf) == 0) ||
+ 	    (!needpass 
+-             && (mutt_strcmp ("-----END PGP SIGNATURE-----\n", buf) == 0
+-                 || mutt_strcmp ("-----END PGP PUBLIC KEY BLOCK-----\n",buf) == 0)))
++             && (mutt_strxcmp ("-----END PGP SIGNATURE-----\n", buf) == 0
++                 || mutt_strxcmp ("-----END PGP PUBLIC KEY BLOCK-----\n",buf) == 0)))
+ 	  break;
+ 	/* remember optional Charset: armor header as defined by RfC4880 */
+ 	if (mutt_strncmp ("Charset: ", buf, 9) == 0)
+@@ -550,11 +550,11 @@ static int pgp_check_traditional_one_bod
+   {
+     if (mutt_strncmp ("-----BEGIN PGP ", buf, 15) == 0)
+     {
+-      if (mutt_strcmp ("MESSAGE-----\n", buf + 15) == 0)
++      if (mutt_strxcmp ("MESSAGE-----\n", buf + 15) == 0)
+ 	enc = 1;
+-      else if (mutt_strcmp ("SIGNED MESSAGE-----\n", buf + 15) == 0)
++      else if (mutt_strxcmp ("SIGNED MESSAGE-----\n", buf + 15) == 0)
+ 	sgn = 1;
+-      else if (mutt_strcmp ("PUBLIC KEY BLOCK-----\n", buf + 15) == 0)
++      else if (mutt_strxcmp ("PUBLIC KEY BLOCK-----\n", buf + 15) == 0)
+ 	key = 1;
+     }
+   }
+@@ -1063,9 +1063,9 @@ BODY *pgp_sign_message (BODY *a)
+    */
+   while (fgets (buffer, sizeof (buffer) - 1, pgpout) != NULL)
+   {
+-    if (mutt_strcmp ("-----BEGIN PGP MESSAGE-----\n", buffer) == 0)
++    if (mutt_strxcmp ("-----BEGIN PGP MESSAGE-----\n", buffer) == 0)
+       fputs ("-----BEGIN PGP SIGNATURE-----\n", fp);
+-    else if (mutt_strcmp("-----END PGP MESSAGE-----\n", buffer) == 0)
++    else if (mutt_strxcmp("-----END PGP MESSAGE-----\n", buffer) == 0)
+       fputs ("-----END PGP SIGNATURE-----\n", fp);
+     else
+       fputs (buffer, fp);

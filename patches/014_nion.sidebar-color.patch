@@ -1,0 +1,73 @@
+
+
+diff --git a/color.c b/color.c
+index d6f9198..37786bc 100644
+--- a/color.c
++++ b/color.c
+@@ -96,6 +96,7 @@ static const struct mapping_t Fields[] =
+   { "prompt",		MT_COLOR_PROMPT },
+   { "sidebar_new",	MT_COLOR_NEW },
+   { "sidebar_flagged",	MT_COLOR_FLAGGED },
++  { "sidebar",          MT_COLOR_SIDEBAR },
+   { NULL,		0 }
+ };
+ 
+@@ -145,6 +146,7 @@ void ci_start_color (void)
+ 
+   /* set some defaults */
+   ColorDefs[MT_COLOR_STATUS] = A_REVERSE;
++  ColorDefs[MT_COLOR_SIDEBAR] = A_REVERSE;
+   ColorDefs[MT_COLOR_INDICATOR] = A_REVERSE;
+   ColorDefs[MT_COLOR_SEARCH] = A_REVERSE;
+   ColorDefs[MT_COLOR_MARKERS] = A_REVERSE;
+diff --git a/mutt_curses.h b/mutt_curses.h
+index ef9884e..b2e88c8 100644
+--- a/mutt_curses.h
++++ b/mutt_curses.h
+@@ -119,6 +119,7 @@ enum
+   MT_COLOR_ATTACHMENT,
+   MT_COLOR_SEARCH,
+   MT_COLOR_BOLD,
++  MT_COLOR_SIDEBAR,
+   MT_COLOR_UNDERLINE,
+   MT_COLOR_INDEX,
+   MT_COLOR_PROMPT,
+diff --git a/sidebar.c b/sidebar.c
+index e9d9eba..8b46bff 100644
+--- a/sidebar.c
++++ b/sidebar.c
+@@ -254,13 +254,14 @@ int draw_sidebar(int menu) {
+     }
+ 
+         /* get attributes for divider */
+-	SETCOLOR(MT_COLOR_STATUS);
++	SETCOLOR(MT_COLOR_SIDEBAR);
+ #ifndef USE_SLANG_CURSES
+         attr_get(&attrs, &color_pair, 0);
+ #else
+         color_pair = attr_get();
+ #endif
+ 	SETCOLOR(MT_COLOR_NORMAL);
++  /* SETCOLOR(MT_COLOR_SIDEBAR); */
+ 
+ 	/* draw the divider */
+ 
+@@ -270,10 +271,14 @@ int draw_sidebar(int menu) {
+ 
+ 	for ( ; lines < SidebarHeight; lines++ ) {
+ 		move(lines, SidebarWidth - delim_len);
+-		addstr(NONULL(SidebarDelim));
+-#ifndef USE_SLANG_CURSES
+-                mvchgat(lines, SidebarWidth - delim_len, delim_len, 0, color_pair, NULL);
+-#endif
++		if (option (OPTASCIICHARS))
++			addstr (NONULL (SidebarDelim));
++		else if (!option (OPTASCIICHARS) && !strcmp (NONULL(SidebarDelim), "|"))
++			addch (ACS_VLINE);
++		else if ((Charset_is_utf8) && !strcmp (NONULL(SidebarDelim), "|"))
++			addstr ("\342\224\202");
++		else
++			addstr (NONULL (SidebarDelim));
+ 	}
+ 
+ 	if ( Incoming == 0 ) return 0;

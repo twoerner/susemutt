@@ -1,0 +1,58 @@
+---
+ PATCHES   |    1 +
+ globals.h |    2 ++
+ init.h    |   12 ++++++++++++
+ pgp.c     |    3 ++-
+ 4 files changed, 17 insertions(+), 1 deletion(-)
+
+--- PATCHES
++++ PATCHES	2012-04-11 04:52:45.000000000 +0000
+@@ -1,3 +1,4 @@
++patch-1.5.3.vk.pgp_verbose_mime
+ patch-1.5.9.aw.listreply.1
+ patch-1.6.0.sidebar.20160404.txt
+ rr.compressed
+--- globals.h
++++ globals.h	2012-04-11 04:52:45.000000000 +0000
+@@ -239,6 +239,8 @@ WHERE REGEXP PgpGoodSign;
+ WHERE char *PgpSignAs;
+ WHERE short PgpTimeout;
+ WHERE char *PgpEntryFormat;
++WHERE char *PgpMimeSignatureFilename;
++WHERE char *PgpMimeSignatureDescription;
+ WHERE char *PgpClearSignCommand;
+ WHERE char *PgpDecodeCommand;
+ WHERE char *PgpVerifyCommand;
+--- init.h
++++ init.h	2012-04-11 04:52:45.000000000 +0000
+@@ -2719,6 +2719,18 @@ struct option_t MuttVars[] = {
+   ** a line quoted text if it also matches $$smileys. This mostly
+   ** happens at the beginning of a line.
+   */
++  { "pgp_mime_signature_filename", DT_STR, R_NONE, UL &PgpMimeSignatureFilename, UL "signature.asc"},
++  /*
++  ** .pp
++  ** This option sets the filename used for signature parts in PGP/MIME
++  ** signed messages.
++  */
++  { "pgp_mime_signature_description", DT_STR, R_NONE, UL &PgpMimeSignatureDescription, UL "Digital signature"},
++  /*
++  ** .pp
++  ** This option sets the Content-Description used for signature parts in
++  ** PGP/MIME signed messages.
++  */
+ 
+ 
+ 
+--- pgp.c
++++ pgp.c	2015-09-11 14:47:19.817518523 +0000
+@@ -1213,7 +1213,8 @@ BODY *pgp_sign_message (BODY *a)
+   t->disposition = DISPNONE;
+   t->encoding = ENC7BIT;
+   t->unlink = 1; /* ok to remove this file after sending. */
+-  mutt_set_parameter ("name", "signature.asc", &t->parameter);
++  mutt_set_parameter ("name", PgpMimeSignatureFilename, &t->parameter);
++  t->description = safe_strdup (PgpMimeSignatureDescription);
+ 
+   return (a);
+ }

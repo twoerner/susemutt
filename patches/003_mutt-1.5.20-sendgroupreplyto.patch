@@ -1,0 +1,45 @@
+--- mutt-1.5.20/init.h
++++ mutt-1.5.20/init.h	2009-06-26 00:00:00.000000000 +0200
+@@ -2399,6 +2399,13 @@ struct option_t MuttVars[] = {
+   ** .pp
+   ** Also see the $$force_name variable.
+   */
++  { "send_group_reply_to",	DT_BOOL, R_NONE, OPTSENDGROUPREPLYTO, 0 },
++  /*
++  ** .pp
++  ** This variable controls how group replies are done.
++  ** When set, all recepients listet in "To:" are set in the
++  ** "To:" header again, else in the "CC", which is the default.
++  */
+   { "score", 		DT_BOOL, R_NONE, OPTSCORE, 1 },
+   /*
+   ** .pp
+--- mutt-1.5.20/mutt.h
++++ mutt-1.5.20/mutt.h	2009-06-26 00:00:00.000000000 +0200
+@@ -417,6 +417,7 @@ enum
+   OPTSAVEADDRESS,
+   OPTSAVEEMPTY,
+   OPTSAVENAME,
++  OPTSENDGROUPREPLYTO,
+   OPTSCORE,
+   OPTSIGDASHES,
+   OPTSIGONTOP,
+--- mutt-1.5.20/send.c
++++ mutt-1.5.20/send.c	2009-06-26 12:24:12.832816460 +0200
+@@ -558,8 +558,16 @@ int mutt_fetch_recips (ENVELOPE *out, EN
+     if ((flags & SENDGROUPREPLY) && (!in->mail_followup_to || hmfupto != M_YES))
+     {
+       /* if(!mutt_addr_is_user(in->to)) */
++      if (option (OPTSENDGROUPREPLYTO))
++      {
++	rfc822_append (&out->to, in->to, 0);
++	rfc822_append (&out->cc, in->cc, 1);
++      }	  
++      else
++      {
+       rfc822_append (&out->cc, in->to, 1);
+       rfc822_append (&out->cc, in->cc, 1);
++      }
+     }
+   }
+   return 0;
