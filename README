@@ -1,0 +1,5 @@
+I'm pretty certain that mutt was working just fine, but one day I noticed that
+all the (gmail) folder names (using the sidebar) were missing the first
+character -- how frustrating!
+
+Anyway here's my fix, a silly one-liner to fix an off-by-one error.
