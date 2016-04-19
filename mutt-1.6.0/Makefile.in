@@ -14,6 +14,9 @@
 
 @SET_MAKE@
 
+mutt_SOURCES += compress.c
+EXTRA_DIST += compress.h
+mutt_OBJECTS += compress.o
 
 VPATH = @srcdir@
 am__is_gnu_make = { \
@@ -125,11 +128,12 @@ am_mutt_OBJECTS = addrbook.$(OBJEXT) alias.$(OBJEXT) attach.$(OBJEXT) \
 	hash.$(OBJEXT) hdrline.$(OBJEXT) headers.$(OBJEXT) \
 	help.$(OBJEXT) hook.$(OBJEXT) keymap.$(OBJEXT) main.$(OBJEXT) \
 	mbox.$(OBJEXT) menu.$(OBJEXT) mh.$(OBJEXT) mx.$(OBJEXT) \
-	pager.$(OBJEXT) parse.$(OBJEXT) pattern.$(OBJEXT) \
+	opennfs.$(OBJEXT) pager.$(OBJEXT) parse.$(OBJEXT) pattern.$(OBJEXT) \
 	postpone.$(OBJEXT) query.$(OBJEXT) recvattach.$(OBJEXT) \
 	recvcmd.$(OBJEXT) rfc822.$(OBJEXT) rfc1524.$(OBJEXT) \
 	rfc2047.$(OBJEXT) rfc2231.$(OBJEXT) rfc3676.$(OBJEXT) \
 	score.$(OBJEXT) send.$(OBJEXT) sendlib.$(OBJEXT) \
+	sidebar.$(OBJECT) \
 	signal.$(OBJEXT) sort.$(OBJEXT) status.$(OBJEXT) \
 	system.$(OBJEXT) thread.$(OBJEXT) charset.$(OBJEXT) \
 	history.$(OBJEXT) lib.$(OBJEXT) muttlib.$(OBJEXT) \
@@ -155,7 +159,7 @@ pgpewrap_LDADD = $(LDADD)
 pgpewrap_DEPENDENCIES = $(LIBOBJS) $(am__DEPENDENCIES_1)
 am_pgpring_OBJECTS = pgppubring.$(OBJEXT) pgplib.$(OBJEXT) \
 	lib.$(OBJEXT) extlib.$(OBJEXT) sha1.$(OBJEXT) md5.$(OBJEXT) \
-	pgppacket.$(OBJEXT) ascii.$(OBJEXT)
+	pgppacket.$(OBJEXT) ascii.$(OBJEXT) opennfs.$(OBJEXT)
 pgpring_OBJECTS = $(am_pgpring_OBJECTS)
 am_txt2c_OBJECTS = txt2c.$(OBJEXT)
 txt2c_OBJECTS = $(am_txt2c_OBJECTS)
@@ -482,10 +486,11 @@ mutt_SOURCES = \
 	edit.c enter.c flags.c init.c filter.c from.c \
 	getdomain.c group.c \
 	handler.c hash.c hdrline.c headers.c help.c hook.c keymap.c \
-	main.c mbox.c menu.c mh.c mx.c pager.c parse.c pattern.c \
+	main.c mbox.c menu.c mh.c mx.c opennfs.c pager.c parse.c pattern.c \
 	postpone.c query.c recvattach.c recvcmd.c \
 	rfc822.c rfc1524.c rfc2047.c rfc2231.c rfc3676.c \
 	score.c send.c sendlib.c signal.c sort.c \
+	sidebar.c \
 	status.c system.c thread.c charset.c history.c lib.c \
 	muttlib.c editmsg.c mbyte.c mutt_idna.c \
 	url.c ascii.c crypt-mod.c crypt-mod.h safe_asprintf.c
@@ -816,6 +821,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/send.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sendlib.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sha1.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sidebar.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/signal.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/smime.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/smtp.Po@am__quote@

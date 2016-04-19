@@ -295,6 +295,32 @@ void mh_buffy(BUFFY *b)
   mhs_free_sequences (&mhs);
 }
 
+void mh_buffy_update (const char *path, int *msgcount, int *msg_unread, int *msg_flagged, time_t *sb_last_checked)
+{
+  int i;
+  struct mh_sequences mhs;
+  memset (&mhs, 0, sizeof (mhs));
+
+  if(!option(OPTSIDEBAR))
+      return;
+
+  if (mh_read_sequences (&mhs, path) < 0)
+    return;
+
+  msgcount = 0;
+  msg_unread = 0;
+  msg_flagged = 0;
+  for (i = 0; i <= mhs.max; i++)
+    msgcount++;
+    if (mhs_check (&mhs, i) & MH_SEQ_UNSEEN) {
+      msg_unread++;
+    }
+    if (mhs_check (&mhs, i) & MH_SEQ_FLAGGED)
+      msg_flagged++;
+  mhs_free_sequences (&mhs);
+  *sb_last_checked = time(NULL);
+}
+
 static int mh_mkstemp (CONTEXT * dest, FILE ** fp, char **tgt)
 {
   int fd;
@@ -306,7 +332,11 @@ static int mh_mkstemp (CONTEXT * dest, FILE ** fp, char **tgt)
   {
     snprintf (path, _POSIX_PATH_MAX, "%s/.mutt-%s-%d-%d",
 	      dest->path, NONULL (Hostname), (int) getpid (), Counter++);
+#if defined(__linux__)
+    if ((fd = opennfs (path, O_WRONLY | O_EXCL | O_CREAT, 0600)) == -1)
+#else
     if ((fd = open (path, O_WRONLY | O_EXCL | O_CREAT, 0666)) == -1)
+#endif
     {
       if (errno != EEXIST)
       {
@@ -1319,8 +1349,11 @@ int maildir_open_new_message (MESSAGE * msg, CONTEXT * dest, HEADER * hdr)
 
     dprint (2, (debugfile, "maildir_open_new_message (): Trying %s.\n",
 		path));
-
+#if defined(__linux__)
+    if ((fd = opennfs (path, O_WRONLY | O_EXCL | O_CREAT, 0600)) == -1)
+#else
     if ((fd = open (path, O_WRONLY | O_EXCL | O_CREAT, 0666)) == -1)
+#endif
     {
       if (errno != EEXIST)
       {
@@ -1546,9 +1579,9 @@ static int mh_rewrite_message (CONTEXT * ctx, int msgno)
   char newpath[_POSIX_PATH_MAX];
   char partpath[_POSIX_PATH_MAX];
 
-  long old_body_offset = h->content->offset;
-  long old_body_length = h->content->length;
-  long old_hdr_lines = h->lines;
+  LOFF_T old_body_offset = h->content->offset;
+  LOFF_T old_body_length = h->content->length;
+  LOFF_T old_hdr_lines = h->lines;
 
   if ((dest = mx_open_new_message (ctx, h, 0)) == NULL)
     return -1;

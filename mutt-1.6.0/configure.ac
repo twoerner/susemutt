@@ -240,7 +240,7 @@ main ()
                         mutt_cv_slang=$withval
                         if test -d $withval/include/slang; then
                                 CPPFLAGS="$CPPFLAGS -I${withval}/include/slang"
-                        elif test -d $withval/include; then
+                        elif test -d $withval/include && test $withval != /usr ; then
                                 CPPFLAGS="$CPPFLAGS -I${withval}/include"
                         fi
                         LDFLAGS="$LDFLAGS -L${withval}/lib"
@@ -279,9 +279,14 @@ main ()
 	do
 		AC_CHECK_LIB($lib, waddnwstr, [cf_ncurses="$lib"; break])
 	done
+	cf_tinfo=""
+	AC_CHECK_LIB(tinfo, tgetent, [cf_tinfo="tinfo"])
         AC_CHECK_LIB($cf_ncurses, initscr,
-                [MUTTLIBS="$MUTTLIBS -l$cf_ncurses"
-		
+                [if test x$cf_tinfo = x ; then
+			MUTTLIBS="$MUTTLIBS -l$cf_ncurses"
+		else
+			MUTTLIBS="$MUTTLIBS -l$cf_ncurses -l$cf_tinfo"
+		fi
                 if test "$cf_ncurses" = ncursesw; then
 			AC_CHECK_HEADERS(ncursesw/ncurses.h,[cf_cv_ncurses_header="ncursesw/ncurses.h"])
 		else
@@ -669,8 +674,12 @@ AC_ARG_WITH(ssl, AS_HELP_STRING([--with-ssl@<:@=PFX@:>@],[Enable TLS support usi
 	  else
             if test "$with_ssl" != "yes"
             then
+	     case $withval in /usr|/usr/local) ;;
+	     *)
              LDFLAGS="$LDFLAGS -L$withval/lib"
              CPPFLAGS="$CPPFLAGS -I$withval/include"
+	     ;;
+	     esac
             fi
             saved_LIBS="$LIBS"
 
@@ -749,8 +758,12 @@ AC_ARG_WITH(sasl, AS_HELP_STRING([--with-sasl@<:@=PFX@:>@],[Use SASL network sec
 
           if test "$with_sasl" != "yes"
           then
+	    case $with_sasl in /usr|/usr/local) ;;
+	    *)
             CPPFLAGS="$CPPFLAGS -I$with_sasl/include"
             LDFLAGS="$LDFLAGS -L$with_sasl/lib"
+	    ;;
+	    esac
           fi
 
           saved_LIBS="$LIBS"
@@ -823,6 +836,11 @@ AC_ARG_ENABLE(nfs-fix, AS_HELP_STRING([--enable-nfs-fix],[Work around an NFS wit
 AC_ARG_ENABLE(mailtool, AS_HELP_STRING([--enable-mailtool],[Enable Sun mailtool attachments support]),
         [if test x$enableval = xyes; then
                 AC_DEFINE(SUN_ATTACHMENT,1,[ Define to enable Sun mailtool attachments support. ])
+        fi])
+
+AC_ARG_ENABLE(compressed, AC_HELP_STRING([--enable-compressed],[Enable compressed folders support]),
+        [if test x$enableval = xyes; then
+                AC_DEFINE(USE_COMPRESSED,1,[ Define to enable compressed folders support. ])
         fi])
 
 AC_ARG_ENABLE(locales-fix, AS_HELP_STRING([--enable-locales-fix],[The result of isprint() is unreliable]),
@@ -1300,6 +1318,8 @@ AC_CACHE_CHECK([for nl_langinfo and YESEXPR], mutt_cv_langinfo_yesexpr,
 if test $mutt_cv_langinfo_yesexpr = yes; then
   AC_DEFINE(HAVE_LANGINFO_YESEXPR,1,[ Define if you have <langinfo.h> and nl_langinfo(YESEXPR). ])
 fi
+
+AC_CHECK_FUNCS(fmemopen open_memstream)
 
 dnl Documentation tools
 have_openjade="no"

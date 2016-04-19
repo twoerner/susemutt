@@ -780,7 +780,7 @@ static void enriched_set_flags (const wchar_t *tag, struct enriched_state *stte)
 static int text_enriched_handler (BODY *a, STATE *s)
 {
   enum {
-    TEXT, LANGLE, TAG, BOGUS_TAG, NEWLINE, ST_EOF, DONE
+    TEXT, TEXT_GOTWC, LANGLE, TAG, BOGUS_TAG, NEWLINE, ST_EOF, DONE
   } state = TEXT;
 
   long bytes = a->length;
@@ -809,7 +809,7 @@ static int text_enriched_handler (BODY *a, STATE *s)
   {
     if (state != ST_EOF)
     {
-      if (!bytes || (wc = fgetwc (s->fpin)) == WEOF)
+      if (state != TEXT_GOTWC && (!bytes || (fscanf (s->fpin, "%lc", &wc)) == EOF))
 	state = ST_EOF;
       else
 	bytes--;
@@ -817,6 +817,8 @@ static int text_enriched_handler (BODY *a, STATE *s)
 
     switch (state)
     {
+      case TEXT_GOTWC:
+       state = TEXT;
       case TEXT :
 	switch (wc)
 	{
@@ -877,9 +879,8 @@ static int text_enriched_handler (BODY *a, STATE *s)
 	  enriched_flush (&stte, 1);
 	else
 	{
-	  ungetwc (wc, s->fpin);
 	  bytes++;
-	  state = TEXT;
+	  state = TEXT_GOTWC;
 	}
 	break;
 
@@ -1567,7 +1568,7 @@ void mutt_decode_attachment (BODY *b, STATE *s)
  * strip all trailing spaces to improve interoperability;
  * if $text_flowed is unset, simply verbatim copy input
  */
-static int text_plain_handler (BODY *b, STATE *s)
+static int text_plain_handler (BODY *b __attribute__((unused)), STATE *s)
 {
   char *buf = NULL;
   size_t l = 0, sz = 0;
@@ -1595,13 +1596,19 @@ static int run_decode_and_handler (BODY *b, STATE *s, handler_t handler, int pla
   int origType;
   char *savePrefix = NULL;
   FILE *fp = NULL;
-  char tempfile[_POSIX_PATH_MAX];
   size_t tmplength = 0;
   LOFF_T tmpoffset = 0;
   int decode = 0;
   int rc = 0;
 
   fseeko (s->fpin, b->offset, 0);
+
+#ifdef HAVE_FMEMOPEN
+  char *temp;
+  size_t tempsize;
+#else
+  char tempfile[_POSIX_PATH_MAX];
+#endif
 
   /* see if we need to decode this part before processing it */
   if (b->encoding == ENCBASE64 || b->encoding == ENCQUOTEDPRINTABLE ||
@@ -1618,6 +1625,14 @@ static int run_decode_and_handler (BODY *b, STATE *s, handler_t handler, int pla
     {
       /* decode to a tempfile, saving the original destination */
       fp = s->fpout;
+#ifdef HAVE_FMEMOPEN
+     if ((s->fpout = open_memstream(&temp, &tempsize)) == NULL)
+     {
+       mutt_error _("Unable to open memory stream!");
+       dprint (1, (debugfile, "Can't open memory stream.\n"));
+       return -1;
+     }
+#else
       mutt_mktemp (tempfile, sizeof (tempfile));
       if ((s->fpout = safe_fopen (tempfile, "w")) == NULL)
       {
@@ -1625,6 +1640,7 @@ static int run_decode_and_handler (BODY *b, STATE *s, handler_t handler, int pla
         dprint (1, (debugfile, "Can't open %s.\n", tempfile));
         return -1;
       }
+#endif
       /* decoding the attachment changes the size and offset, so save a copy
         * of the "real" values now, and restore them after processing
         */
@@ -1653,9 +1669,19 @@ static int run_decode_and_handler (BODY *b, STATE *s, handler_t handler, int pla
       /* restore final destination and substitute the tempfile for input */
       s->fpout = fp;
       fp = s->fpin;
+#ifdef HAVE_FMEMOPEN
+      if(tempsize)
+        s->fpin = fmemopen(temp, tempsize, "r");
+      else /* fmemopen cannot handle zero-length buffers */
+        s->fpin = safe_fopen ("/dev/null", "r");
+      if(s->fpin == NULL) {
+       mutt_perror("failed to re-open memstream!");
+       return (-1);
+      }
+#else
       s->fpin = fopen (tempfile, "r");
       unlink (tempfile);
-
+#endif
       /* restore the prefix */
       s->prefix = savePrefix;
     }
@@ -1680,6 +1706,10 @@ static int run_decode_and_handler (BODY *b, STATE *s, handler_t handler, int pla
 
       /* restore the original source stream */
       safe_fclose (&s->fpin);
+#ifdef HAVE_FMEMOPEN
+      if(tempsize)
+          FREE(&temp);
+#endif
       s->fpin = fp;
     }
   }

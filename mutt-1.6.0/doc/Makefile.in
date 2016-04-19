@@ -341,7 +341,8 @@ EXTRA_DIST = dotlock.man		\
 
 CHUNKED_DOCFILES = index.html intro.html gettingstarted.html \
 	configuration.html mimesupport.html advancedusage.html \
-	optionalfeatures.html security.html tuning.html reference.html miscellany.html
+	optionalfeatures.html security.html tuning.html reference.html miscellany.html \
+	compressed-folders.html
 
 HTML_DOCFILES = manual.html $(CHUNKED_DOCFILES)
 BUILT_DISTFILES = stamp-doc-xml stamp-doc-chunked manual.txt $(HTML_DOCFILES)
@@ -697,7 +698,7 @@ uninstall-local:
 
 check:
 manual.txt: manual.html
-	-LC_ALL=C lynx -dump -nolist -with_backspaces -display_charset=us-ascii manual.html > $@ || \
+	-LC_ALL=C lynx -dont_wrap_pre -center -dump -nolist -with_backspaces -display_charset=us-ascii manual.html > $@ || \
 	LC_ALL=C w3m -dump manual.html > $@ || \
 	LC_ALL=C elinks -dump -no-numbering -no-references manual.html | sed -e 's,\\001, ,g' > $@
 

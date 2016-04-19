@@ -1482,6 +1482,7 @@ Optional Features:
   --disable-warnings      Turn off compiler warnings (not recommended)
   --enable-nfs-fix        Work around an NFS with broken attributes caching
   --enable-mailtool       Enable Sun mailtool attachments support
+  --enable-compressed     Enable compressed folders support
   --enable-locales-fix    The result of isprint() is unreliable
   --enable-exact-address  Enable regeneration of email addresses
   --enable-hcache         Enable header caching
@@ -9147,6 +9148,18 @@ $as_echo "$mutt_cv_regex_broken" >&6; }
         if test $mutt_cv_regex_broken = yes ; then
                 echo "Using the included GNU regex instead." >&6
                 mutt_cv_regex=yes
+        fi
+fi
+
+
+# Check whether --enable-compressed or --disable-compressed was given.
+if test "${enable_compressed+set}" = set; then
+  enableval="$enable_compressed"
+  if test x$enableval = xyes; then
+                cat >> confdefs.h <<\EOF
+#define USE_COMPRESSED 1
+EOF
+
         fi
 fi
 

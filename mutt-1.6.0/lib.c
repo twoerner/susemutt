@@ -50,6 +50,7 @@
 #define EX_OK 0
 #endif
 
+#include "mutt.h"
 #include "lib.h"
 
 
@@ -633,6 +634,10 @@ int safe_open (const char *path, int flags)
   struct stat osb, nsb;
   int fd;
 
+#if defined(__linux__)
+  if ((fd = opennfs (path, flags, 0600)) < 0)
+    return fd;
+#else
   if (flags & O_EXCL) 
   {
     char safe_file[_POSIX_PATH_MAX];
@@ -656,7 +661,7 @@ int safe_open (const char *path, int flags)
 
   if ((fd = open (path, flags & ~O_EXCL, 0600)) < 0)
     return fd;
-    
+#endif
   /* make sure the file is not symlink */
   if (lstat (path, &osb) < 0 || fstat (fd, &nsb) < 0 ||
       compare_stat(&osb, &nsb) == -1)
@@ -815,6 +820,9 @@ char *mutt_substrdup (const char *begin, const char *end)
   size_t len;
   char *p;
 
+  if (end != NULL && end < begin)
+    return NULL;
+
   if (end)
     len = end - begin;
   else
@@ -869,6 +877,18 @@ size_t mutt_quote_filename (char *d, size_t l, const char *f)
 int mutt_strcmp(const char *a, const char *b)
 {
   return strcmp(NONULL(a), NONULL(b));
+}
+
+int mutt_strxcmp(const char *a, const char *b)
+{
+  size_t xa, xb;
+  xa = strcspn(NONULL(a), "\r\n");
+  xb = strcspn(NONULL(b), "\r\n");
+  if (xb != xa)
+    return -1;
+  if (!xa)
+    return 0;
+  return strncmp(NONULL(a), NONULL(b), xa);
 }
 
 int mutt_strcasecmp(const char *a, const char *b)

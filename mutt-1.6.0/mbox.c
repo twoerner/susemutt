@@ -29,6 +29,10 @@
 #include "copy.h"
 #include "mutt_curses.h"
 
+#ifdef USE_COMPRESSED
+#include "compress.h"
+#endif
+
 #include <sys/stat.h>
 #include <dirent.h>
 #include <string.h>
@@ -100,6 +104,7 @@ int mmdf_parse_mailbox (CONTEXT *ctx)
     mutt_perror (ctx->path);
     return (-1);
   }
+  ctx->atime = sb.st_atime;
   ctx->mtime = sb.st_mtime;
   ctx->size = sb.st_size;
 
@@ -251,6 +256,7 @@ int mbox_parse_mailbox (CONTEXT *ctx)
 
   ctx->size = sb.st_size;
   ctx->mtime = sb.st_mtime;
+  ctx->atime = sb.st_atime;
 
 #ifdef NFS_ATTRIBUTE_HACK
   if (sb.st_mtime > sb.st_atime)
@@ -775,7 +781,7 @@ int mbox_sync_mailbox (CONTEXT *ctx, int *index_hint)
 
   /* Create a temporary file to write the new version of the mailbox in. */
   mutt_mktemp (tempfile, sizeof (tempfile));
-  if ((i = open (tempfile, O_WRONLY | O_EXCL | O_CREAT, 0600)) == -1 ||
+  if ((i = opennfs (tempfile, O_WRONLY | O_EXCL | O_CREAT, 0600)) == -1 ||
       (fp = fdopen (i, "w")) == NULL)
   {
     if (-1 != i)
@@ -1073,6 +1079,12 @@ bail:  /* Come here in case of disaster */
 int mbox_close_mailbox (CONTEXT *ctx)
 {
   mx_unlock_file (ctx->path, fileno (ctx->fp), 1);
+
+#ifdef USE_COMPRESSED
+  if (ctx->compressinfo)
+    mutt_slow_close_compressed (ctx);
+#endif
+
   mutt_unblock_signals ();
   mx_fastclose_mailbox (ctx);
   return 0;

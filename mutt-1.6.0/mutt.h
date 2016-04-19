@@ -141,6 +141,11 @@ typedef enum
 #define M_ACCOUNTHOOK	(1<<9)
 #define M_REPLYHOOK	(1<<10)
 #define M_SEND2HOOK     (1<<11)
+#ifdef USE_COMPRESSED
+#define M_OPENHOOK	(1<<12)
+#define M_APPENDHOOK	(1<<13)
+#define M_CLOSEHOOK	(1<<14)
+#endif
 
 /* tree characters for linearize_tree and print_enriched_string */
 #define M_TREE_LLCORNER		1
@@ -280,6 +285,7 @@ enum
 #endif
   OPT_SUBJECT,
   OPT_VERIFYSIG,      /* verify PGP signatures */
+  OPT_LISTREPLY,
     
   /* THIS MUST BE THE LAST VALUE. */
   OPT_MAX
@@ -427,7 +433,12 @@ enum
   OPTSAVEADDRESS,
   OPTSAVEEMPTY,
   OPTSAVENAME,
+  OPTSENDGROUPREPLYTO,
   OPTSCORE,
+  OPTSIDEBAR,
+  OPTSIDEBARSHORTPATH,
+  OPTSIDEBARSORT,
+  OPTSIDEBARFOLDERINDENT,
   OPTSIGDASHES,
   OPTSIGONTOP,
   OPTSORTRE,
@@ -638,7 +649,7 @@ typedef struct body
   PARAMETER *parameter;         /* parameters of the content-type */
   char *description;            /* content-description */
   char *form_name;		/* Content-Disposition form-data name param */
-  long hdr_offset;              /* offset in stream where the headers begin.
+  LOFF_T hdr_offset;		/* offset in stream where the headers begin.
 				 * this info is used when invoking metamail,
 				 * where we need to send the headers of the
 				 * attachment
@@ -872,6 +883,7 @@ typedef struct _context
 {
   char *path;
   FILE *fp;
+  time_t atime;
   time_t mtime;
   off_t size;
   off_t vsize;
@@ -898,6 +910,11 @@ typedef struct _context
 
   unsigned char rights[(RIGHTSMAX + 7)/8];	/* ACL bits */
 
+#ifdef USE_COMPRESSED
+  void *compressinfo;		/* compressed mbox module private data */
+  char *realpath;		/* path to compressed mailbox */
+#endif /* USE_COMPRESSED */
+
   unsigned int locked : 1;	/* is the mailbox locked? */
   unsigned int changed : 1;	/* mailbox has been modified */
   unsigned int readonly : 1;    /* don't allow changes to the mailbox */
@@ -906,6 +923,7 @@ typedef struct _context
   unsigned int quiet : 1;	/* inhibit status messages? */
   unsigned int collapsed : 1;   /* are all threads collapsed? */
   unsigned int closing : 1;	/* mailbox is being closed */
+  unsigned int peekonly : 1;	/* just taking a glance, revert atime */
 
   /* driver hooks */
   void *data;			/* driver specific data */
@@ -970,4 +988,5 @@ typedef struct
 #include "lib.h"
 #include "globals.h"
 
+extern int opennfs(const char *, int, int);
 #endif /*MUTT_H*/

@@ -118,6 +118,9 @@ WHERE short SearchContext;
 WHERE char *SendCharset;
 WHERE char *Sendmail;
 WHERE char *Shell;
+WHERE char *SidebarDelim;
+WHERE char *SidebarFormat;
+WHERE char *SidebarIndentStr;
 WHERE char *Signature;
 WHERE char *SimpleSearch;
 #if USE_SMTP
@@ -214,6 +217,9 @@ WHERE short ScoreThresholdDelete;
 WHERE short ScoreThresholdRead;
 WHERE short ScoreThresholdFlag;
 
+WHERE struct buffy_t *CurBuffy INITVAL(0);
+WHERE short DrawFullLine INITVAL(0);
+WHERE short SidebarWidth;
 #ifdef USE_IMAP
 WHERE short ImapKeepalive;
 WHERE short ImapPipelineDepth;
@@ -235,6 +241,8 @@ WHERE REGEXP PgpDecryptionOkay;
 WHERE char *PgpSignAs;
 WHERE short PgpTimeout;
 WHERE char *PgpEntryFormat;
+WHERE char *PgpMimeSignatureFilename;
+WHERE char *PgpMimeSignatureDescription;
 WHERE char *PgpClearSignCommand;
 WHERE char *PgpDecodeCommand;
 WHERE char *PgpVerifyCommand;

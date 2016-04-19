@@ -1390,6 +1390,13 @@ struct option_t MuttVars[] = {
   ** The locale used by \fCstrftime(3)\fP to format dates. Legal values are
   ** the strings your system accepts for the locale environment variable \fC$$$LC_TIME\fP.
   */
+  { "list_reply",	DT_QUAD, R_NONE, OPT_LISTREPLY, M_NO },
+  /*
+  ** .pp
+  ** When set, address replies to the mailing list the original message came
+  ** from (instead to the author only).  Setting this option to ``ask-yes'' or
+  ** ``ask-no'' will ask if you really intended to reply to the author only.
+  */
   { "mail_check",	DT_NUM,  R_NONE, UL &BuffyTimeout, 5 },
   /*
   ** .pp
@@ -2049,6 +2056,54 @@ struct option_t MuttVars[] = {
   ** not used.
   ** (PGP only)
   */
+  {"sidebar_delim", DT_STR, R_BOTH, UL &SidebarDelim, UL "|"},
+  /*
+  ** .pp
+  ** This specifies the delimiter between the sidebar (if visible) and 
+  ** other screens.
+  */
+  {"sidebar_indentstr", DT_STR, R_BOTH, UL &SidebarIndentStr, UL " "},
+  /*
+  ** .pp
+  ** This specifies the string that is used to indent items
+  ** with sidebar_folderindent= yes
+  */
+  { "sidebar_visible", DT_BOOL, R_BOTH, OPTSIDEBAR, 0 },
+  /*
+  ** .pp
+  ** This specifies whether or not to show sidebar (left-side list of folders).
+  */
+  { "sidebar_sort", DT_BOOL, R_BOTH, OPTSIDEBARSORT, 0 },
+  /*
+  ** .pp
+  ** This specifies whether or not to sort the sidebar alphabetically.
+  */
+  { "sidebar_width", DT_NUM, R_BOTH, UL &SidebarWidth, 0 },
+  /*
+  ** .pp
+  ** The width of the sidebar.
+  */
+  { "sidebar_shortpath", DT_BOOL, R_BOTH, OPTSIDEBARSHORTPATH, 0 },
+  /*
+  ** .pp
+  ** Should the sidebar shorten the path showed.
+  */
+  {"sidebar_format", DT_STR, R_NONE, UL &SidebarFormat, UL "%B%?F? [%F]?%* %?N?%N/?%4S"},
+  /*
+  ** .pp
+  ** Format string for the sidebar. The sequences `%N', `%F' and `%S'
+  ** will be replaced by the number of new or flagged messages or the total
+  ** size of them mailbox. `%B' will be replaced with the name of the mailbox.
+  ** The `%!' sequence will be expanded to `!' if there is one flagged message;
+  ** to `!!' if there are two flagged messages; and to `n!' for n flagged
+  ** messages, n>2.
+  */
+  { "sidebar_folderindent", DT_BOOL, R_BOTH, OPTSIDEBARFOLDERINDENT, 0 },
+  /*
+  ** .pp
+  ** Should folders be indented in the sidebar.
+  */
+
   { "pgp_use_gpg_agent", DT_BOOL, R_NONE, OPTUSEGPGAGENT, 0},
   /*
   ** .pp
@@ -2585,6 +2640,13 @@ struct option_t MuttVars[] = {
   ** .pp
   ** Also see the $$force_name variable.
   */
+  { "send_group_reply_to",	DT_BOOL, R_NONE, OPTSENDGROUPREPLYTO, 0 },
+  /*
+  ** .pp
+  ** This variable controls how group replies are done.
+  ** When set, all recepients listet in "To:" are set in the
+  ** "To:" header again, else in the "CC", which is the default.
+  */
   { "score", 		DT_BOOL, R_NONE, OPTSCORE, 1 },
   /*
   ** .pp
@@ -2726,6 +2788,18 @@ struct option_t MuttVars[] = {
   ** positives of $$quote_regexp, most notably smileys and not consider
   ** a line quoted text if it also matches $$smileys. This mostly
   ** happens at the beginning of a line.
+  */
+  { "pgp_mime_signature_filename", DT_STR, R_NONE, UL &PgpMimeSignatureFilename, UL "signature.asc"},
+  /*
+  ** .pp
+  ** This option sets the filename used for signature parts in PGP/MIME
+  ** signed messages.
+  */
+  { "pgp_mime_signature_description", DT_STR, R_NONE, UL &PgpMimeSignatureDescription, UL "Digital signature"},
+  /*
+  ** .pp
+  ** This option sets the Content-Description used for signature parts in
+  ** PGP/MIME signed messages.
   */
 
 
@@ -3122,6 +3196,9 @@ struct option_t MuttVars[] = {
   ** the default from the GNUTLS library.
   */
 # endif /* USE_SSL_GNUTLS */
+#if defined(USE_IMAP) && defined(SUSE_IMAP_FORCE_SSL)
+  { "imap_force_ssl",	DT_SYN,	R_NONE, UL "ssl_force_tls", 0 },
+#endif
   { "ssl_starttls", DT_QUAD, R_NONE, OPT_SSLSTARTTLS, M_YES },
   /*
   ** .pp
@@ -3528,7 +3605,8 @@ struct option_t MuttVars[] = {
   ** When \fIset\fP, mutt will weed headers when displaying, forwarding,
   ** printing, or replying to messages.
   */
-  { "wrap",             DT_NUM,  R_PAGER, UL &Wrap, 0 },
+  { "wrap",		DT_NUM,  R_PAGER, UL &Wrap, 0 },
+  { "wrapcolumn",	DT_SYN,  R_NONE, UL "wrap", 0 },
   /*
   ** .pp
   ** When set to a positive value, mutt will wrap text at $$wrap characters.
@@ -3712,6 +3790,11 @@ const struct command_t Commands[] = {
   { "fcc-hook",		mutt_parse_hook,	M_FCCHOOK },
   { "fcc-save-hook",	mutt_parse_hook,	M_FCCHOOK | M_SAVEHOOK },
   { "folder-hook",	mutt_parse_hook,	M_FOLDERHOOK },
+#ifdef USE_COMPRESSED
+  { "open-hook",	mutt_parse_hook,	M_OPENHOOK },
+  { "close-hook",	mutt_parse_hook,	M_CLOSEHOOK },
+  { "append-hook",	mutt_parse_hook,	M_APPENDHOOK },
+#endif
   { "group",		parse_group,		M_GROUP },
   { "ungroup",		parse_group,		M_UNGROUP },
   { "hdr_order",	parse_list,		UL &HeaderOrderList },

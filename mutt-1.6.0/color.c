@@ -94,6 +94,9 @@ static const struct mapping_t Fields[] =
   { "underline",	MT_COLOR_UNDERLINE },
   { "index",		MT_COLOR_INDEX },
   { "prompt",		MT_COLOR_PROMPT },
+  { "sidebar_new",	MT_COLOR_NEW },
+  { "sidebar_flagged",	MT_COLOR_FLAGGED },
+  { "sidebar",          MT_COLOR_SIDEBAR },
   { NULL,		0 }
 };
 
@@ -143,6 +146,7 @@ void ci_start_color (void)
 
   /* set some defaults */
   ColorDefs[MT_COLOR_STATUS] = A_REVERSE;
+  ColorDefs[MT_COLOR_SIDEBAR] = A_REVERSE;
   ColorDefs[MT_COLOR_INDICATOR] = A_REVERSE;
   ColorDefs[MT_COLOR_SEARCH] = A_REVERSE;
   ColorDefs[MT_COLOR_MARKERS] = A_REVERSE;

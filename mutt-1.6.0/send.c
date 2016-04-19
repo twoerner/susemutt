@@ -452,6 +452,7 @@ static int include_reply (CONTEXT *ctx, HEADER *cur, FILE *out)
 static int default_to (ADDRESS **to, ENVELOPE *env, int flags, int hmfupto)
 {
   char prompt[STRING];
+  ADDRESS *tmp;
 
   if (flags && env->mail_followup_to && hmfupto == M_YES) 
   {
@@ -464,6 +465,23 @@ static int default_to (ADDRESS **to, ENVELOPE *env, int flags, int hmfupto)
    */
   if (flags & SENDLISTREPLY)
     return 0;
+
+  /* If this message came from a mailing list, ask the user if he really
+   * intended to reply to the author only.
+   */
+  if (!(flags & SENDGROUPREPLY) && mutt_is_list_cc (0, env->to, env->cc)) {
+    switch (query_quadoption (OPT_LISTREPLY,
+            _("Message came from a mailing list. Reply to author only?")))
+    {
+    case M_NO:
+      tmp = find_mailing_lists (env->to, env->cc);
+      rfc822_append (to, tmp, 0);
+      rfc822_free_address (&tmp);
+      return 0;
+    case -1:
+      return -1; /* abort */
+    }
+  }
 
   if (!option(OPTREPLYSELF) && mutt_addr_is_user (env->from))
   {
@@ -560,8 +578,16 @@ int mutt_fetch_recips (ENVELOPE *out, ENVELOPE *in, int flags)
     if ((flags & SENDGROUPREPLY) && (!in->mail_followup_to || hmfupto != M_YES))
     {
       /* if(!mutt_addr_is_user(in->to)) */
+      if (option (OPTSENDGROUPREPLYTO))
+      {
+	rfc822_append (&out->to, in->to, 0);
+	rfc822_append (&out->cc, in->cc, 1);
+      }	  
+      else
+      {
       rfc822_append (&out->cc, in->to, 1);
       rfc822_append (&out->cc, in->cc, 1);
+      }
     }
   }
   return 0;
