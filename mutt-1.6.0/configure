@@ -755,7 +755,6 @@ infodir
 docdir
 oldincludedir
 includedir
-runstatedir
 localstatedir
 sharedstatedir
 sysconfdir
@@ -807,6 +806,7 @@ enable_fcntl
 enable_warnings
 enable_nfs_fix
 enable_mailtool
+enable_compressed
 enable_locales_fix
 with_exec_shell
 enable_exact_address
@@ -870,7 +870,6 @@ datadir='${datarootdir}'
 sysconfdir='${prefix}/etc'
 sharedstatedir='${prefix}/com'
 localstatedir='${prefix}/var'
-runstatedir='${localstatedir}/run'
 includedir='${prefix}/include'
 oldincludedir='/usr/include'
 docdir='${datarootdir}/doc/${PACKAGE_TARNAME}'
@@ -1123,15 +1122,6 @@ do
   | -silent | --silent | --silen | --sile | --sil)
     silent=yes ;;
 
-  -runstatedir | --runstatedir | --runstatedi | --runstated \
-  | --runstate | --runstat | --runsta | --runst | --runs \
-  | --run | --ru | --r)
-    ac_prev=runstatedir ;;
-  -runstatedir=* | --runstatedir=* | --runstatedi=* | --runstated=* \
-  | --runstate=* | --runstat=* | --runsta=* | --runst=* | --runs=* \
-  | --run=* | --ru=* | --r=*)
-    runstatedir=$ac_optarg ;;
-
   -sbindir | --sbindir | --sbindi | --sbind | --sbin | --sbi | --sb)
     ac_prev=sbindir ;;
   -sbindir=* | --sbindir=* | --sbindi=* | --sbind=* | --sbin=* \
@@ -1269,7 +1259,7 @@ fi
 for ac_var in	exec_prefix prefix bindir sbindir libexecdir datarootdir \
 		datadir sysconfdir sharedstatedir localstatedir includedir \
 		oldincludedir docdir infodir htmldir dvidir pdfdir psdir \
-		libdir localedir mandir runstatedir
+		libdir localedir mandir
 do
   eval ac_val=\$$ac_var
   # Remove trailing slashes.
@@ -1422,7 +1412,6 @@ Fine tuning of the installation directories:
   --sysconfdir=DIR        read-only single-machine data [PREFIX/etc]
   --sharedstatedir=DIR    modifiable architecture-independent data [PREFIX/com]
   --localstatedir=DIR     modifiable single-machine data [PREFIX/var]
-  --runstatedir=DIR       modifiable per-process data [LOCALSTATEDIR/run]
   --libdir=DIR            object code libraries [EPREFIX/lib]
   --includedir=DIR        C header files [PREFIX/include]
   --oldincludedir=DIR     C header files for non-gcc [/usr/include]
@@ -6487,7 +6476,7 @@ else
     We can't simply define LARGE_OFF_T to be 9223372036854775807,
     since some C++ compilers masquerading as C compilers
     incorrectly reject 9223372036854775807.  */
-#define LARGE_OFF_T ((((off_t) 1 << 31) << 31) - 1 + (((off_t) 1 << 31) << 31))
+#define LARGE_OFF_T (((off_t) 1 << 62) - 1 + ((off_t) 1 << 62))
   int off_t_is_large[(LARGE_OFF_T % 2147483629 == 721
 		       && LARGE_OFF_T % 2147483647 == 1)
 		      ? 1 : -1];
@@ -6533,7 +6522,7 @@ else
     We can't simply define LARGE_OFF_T to be 9223372036854775807,
     since some C++ compilers masquerading as C compilers
     incorrectly reject 9223372036854775807.  */
-#define LARGE_OFF_T ((((off_t) 1 << 31) << 31) - 1 + (((off_t) 1 << 31) << 31))
+#define LARGE_OFF_T (((off_t) 1 << 62) - 1 + ((off_t) 1 << 62))
   int off_t_is_large[(LARGE_OFF_T % 2147483629 == 721
 		       && LARGE_OFF_T % 2147483647 == 1)
 		      ? 1 : -1];
@@ -6557,7 +6546,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     We can't simply define LARGE_OFF_T to be 9223372036854775807,
     since some C++ compilers masquerading as C compilers
     incorrectly reject 9223372036854775807.  */
-#define LARGE_OFF_T ((((off_t) 1 << 31) << 31) - 1 + (((off_t) 1 << 31) << 31))
+#define LARGE_OFF_T (((off_t) 1 << 62) - 1 + ((off_t) 1 << 62))
   int off_t_is_large[(LARGE_OFF_T % 2147483629 == 721
 		       && LARGE_OFF_T % 2147483647 == 1)
 		      ? 1 : -1];
@@ -6602,7 +6591,7 @@ else
     We can't simply define LARGE_OFF_T to be 9223372036854775807,
     since some C++ compilers masquerading as C compilers
     incorrectly reject 9223372036854775807.  */
-#define LARGE_OFF_T ((((off_t) 1 << 31) << 31) - 1 + (((off_t) 1 << 31) << 31))
+#define LARGE_OFF_T (((off_t) 1 << 62) - 1 + ((off_t) 1 << 62))
   int off_t_is_large[(LARGE_OFF_T % 2147483629 == 721
 		       && LARGE_OFF_T % 2147483647 == 1)
 		      ? 1 : -1];
@@ -6626,7 +6615,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     We can't simply define LARGE_OFF_T to be 9223372036854775807,
     since some C++ compilers masquerading as C compilers
     incorrectly reject 9223372036854775807.  */
-#define LARGE_OFF_T ((((off_t) 1 << 31) << 31) - 1 + (((off_t) 1 << 31) << 31))
+#define LARGE_OFF_T (((off_t) 1 << 62) - 1 + ((off_t) 1 << 62))
   int off_t_is_large[(LARGE_OFF_T % 2147483629 == 721
 		       && LARGE_OFF_T % 2147483647 == 1)
 		      ? 1 : -1];
@@ -7703,7 +7692,7 @@ $as_echo_n "checking for S-Lang... " >&6; }
                                                 mutt_cv_slang=$withval
                         if test -d $withval/include/slang; then
                                 CPPFLAGS="$CPPFLAGS -I${withval}/include/slang"
-                        elif test -d $withval/include; then
+                        elif test -d $withval/include && test $withval != /usr ; then
                                 CPPFLAGS="$CPPFLAGS -I${withval}/include"
                         fi
                         LDFLAGS="$LDFLAGS -L${withval}/lib"
@@ -7871,6 +7860,47 @@ if eval test \"x\$"$as_ac_Lib"\" = x"yes"; then :
 fi
 
 	done
+	cf_tinfo=""
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for tgetent in -ltinfo" >&5
+$as_echo_n "checking for tgetent in -ltinfo... " >&6; }
+if ${ac_cv_lib_tinfo_tgetent+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-ltinfo  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char tgetent ();
+int
+main ()
+{
+return tgetent ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_tinfo_tgetent=yes
+else
+  ac_cv_lib_tinfo_tgetent=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_tinfo_tgetent" >&5
+$as_echo "$ac_cv_lib_tinfo_tgetent" >&6; }
+if test "x$ac_cv_lib_tinfo_tgetent" = xyes; then :
+  cf_tinfo="tinfo"
+fi
+
         as_ac_Lib=`$as_echo "ac_cv_lib_$cf_ncurses''_initscr" | $as_tr_sh`
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for initscr in -l$cf_ncurses" >&5
 $as_echo_n "checking for initscr in -l$cf_ncurses... " >&6; }
@@ -7910,8 +7940,11 @@ eval ac_res=\$$as_ac_Lib
 	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
 $as_echo "$ac_res" >&6; }
 if eval test \"x\$"$as_ac_Lib"\" = x"yes"; then :
-  MUTTLIBS="$MUTTLIBS -l$cf_ncurses"
-
+  if test x$cf_tinfo = x ; then
+			MUTTLIBS="$MUTTLIBS -l$cf_ncurses"
+		else
+			MUTTLIBS="$MUTTLIBS -l$cf_ncurses -l$cf_tinfo"
+		fi
                 if test "$cf_ncurses" = ncursesw; then
 			for ac_header in ncursesw/ncurses.h
 do :
@@ -9151,18 +9184,6 @@ $as_echo "$mutt_cv_regex_broken" >&6; }
         fi
 fi
 
-
-# Check whether --enable-compressed or --disable-compressed was given.
-if test "${enable_compressed+set}" = set; then
-  enableval="$enable_compressed"
-  if test x$enableval = xyes; then
-                cat >> confdefs.h <<\EOF
-#define USE_COMPRESSED 1
-EOF
-
-        fi
-fi
-
 if test $mutt_cv_regex = yes; then
 
 $as_echo "#define USE_GNU_REGEX 1" >>confdefs.h
@@ -9964,8 +9985,12 @@ $as_echo "$as_me: WARNING: SSL support is only useful with POP, IMAP or SMTP sup
 	  else
             if test "$with_ssl" != "yes"
             then
+	     case $withval in /usr|/usr/local) ;;
+	     *)
              LDFLAGS="$LDFLAGS -L$withval/lib"
              CPPFLAGS="$CPPFLAGS -I$withval/include"
+	     ;;
+	     esac
             fi
             saved_LIBS="$LIBS"
 
@@ -10325,8 +10350,12 @@ if test "${with_sasl+set}" = set; then :
 
           if test "$with_sasl" != "yes"
           then
+	    case $with_sasl in /usr|/usr/local) ;;
+	    *)
             CPPFLAGS="$CPPFLAGS -I$with_sasl/include"
             LDFLAGS="$LDFLAGS -L$with_sasl/lib"
+	    ;;
+	    esac
           fi
 
           saved_LIBS="$LIBS"
@@ -10504,6 +10533,16 @@ if test "${enable_mailtool+set}" = set; then :
   enableval=$enable_mailtool; if test x$enableval = xyes; then
 
 $as_echo "#define SUN_ATTACHMENT 1" >>confdefs.h
+
+        fi
+fi
+
+
+# Check whether --enable-compressed was given.
+if test "${enable_compressed+set}" = set; then :
+  enableval=$enable_compressed; if test x$enableval = xyes; then
+
+$as_echo "#define USE_COMPRESSED 1" >>confdefs.h
 
         fi
 fi
@@ -12836,6 +12875,19 @@ if test $mutt_cv_langinfo_yesexpr = yes; then
 $as_echo "#define HAVE_LANGINFO_YESEXPR 1" >>confdefs.h
 
 fi
+
+for ac_func in fmemopen open_memstream
+do :
+  as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
+ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
+if eval test \"x\$"$as_ac_var"\" = x"yes"; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+done
+
 
 have_openjade="no"
 # Extract the first word of "ospcat", so it can be a program name with args.

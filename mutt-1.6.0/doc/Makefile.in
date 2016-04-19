@@ -299,7 +299,6 @@ pdfdir = @pdfdir@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
 psdir = @psdir@
-runstatedir = @runstatedir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
@@ -698,7 +697,7 @@ uninstall-local:
 
 check:
 manual.txt: manual.html
-	-LC_ALL=C lynx -dont_wrap_pre -center -dump -nolist -with_backspaces -display_charset=us-ascii manual.html > $@ || \
+	-LC_ALL=C lynx -dump -nolist -with_backspaces -display_charset=us-ascii manual.html > $@ || \
 	LC_ALL=C w3m -dump manual.html > $@ || \
 	LC_ALL=C elinks -dump -no-numbering -no-references manual.html | sed -e 's,\\001, ,g' > $@
 

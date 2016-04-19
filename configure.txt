@@ -1,0 +1,18 @@
+configure \
+	--enable-imap \
+	--enable-pop \
+	--enable-pgp \
+	--enable-gpgme \
+	--enable-nfs-fix \
+	--enable-mailtool \
+	--enable-compressed \
+	--disable-external-dotlock \
+	--with-ssl=/usr \
+	--with-sasl=/usr \
+	--with-gss=/usr \
+	--with-gnutls=/usr \
+	--with-curses=/usr \
+	--with-regex \
+	--enable-smtp \
+	--enable-hcache \
+	--with-idn
