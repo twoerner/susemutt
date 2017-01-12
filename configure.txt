@@ -1,3 +1,13 @@
+make sure you have the required dependencies (*-devel) installed:
+
+	# zypper si -D mutt
+
+this requires the source repository to be enabled:
+
+	# zypper mr -e repo-source
+	# zypper ref
+
+
 configure \
 	--enable-imap \
 	--enable-pop \
